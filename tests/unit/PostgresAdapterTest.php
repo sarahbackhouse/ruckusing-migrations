@@ -229,9 +229,6 @@ class PostgresAdapterTest extends PHPUnit_Framework_TestCase
         $expected = '"age" integer';
         $this->assertEquals($expected, $this->adapter->column_definition("age", "integer"));
 
-        $expected = '"age" integer';
-        $this->assertEquals($expected, $this->adapter->column_definition("age", "mediuminteger"));
-
         $expected = '"active" boolean';
         $this->assertEquals($expected, $this->adapter->column_definition("active", "boolean"));
 
