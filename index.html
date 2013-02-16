@@ -1,65 +1,960 @@
-<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Ruckusing-migrations by sweetbee</title>
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="chrome=1">
+		<title>Ruckusing-migrations</title>
+		<script src="assets/js/prettify.js"></script>
+    	<link rel="stylesheet" href="assets/css/bootstrap.min.css" />
+		<link rel="stylesheet" href="assets/css/prettify.css" />
+		<style>
+			body		{ padding: 100px 0 0;}
+    		.brand span { display: block; font-size: 12px; }
+    		.footer		{ background-color: #F5F5F5; border-top: 1px solid #E5E5E5; margin-top: 70px; padding: 30px 0;  }
+    		.footer p	{ color: #777777; font-size: 12px; font-weight: 200; text-shadow: 0 1px 0 #FFFFFF;}
+    		.separator 	{ margin: 40px 0 39px; }
+    		.docs-nav	{ width: 180px; }
+    		section		{ padding: 100px 0 0 0;}
+    		.span9 section:first-child { padding: 0;}
+    		.docs		{ margin: 50px 0;}
 
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
-    <script src="javascripts/scale.fix.js"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    	</style>
+	</head>
+	<body data-target=".docs-nav" data-spy="scroll" onload="prettyPrint();">
+		<div class="navbar navbar-fixed-top">
+			<div class="navbar-inner">
+				<div class="container">
+					<div class="row">
+						<div class="span9">
+							<a class="brand" href="./index.html">
+								ruckusing-migrations
+								<span>Migrations for PHP ala ActiveRecord Migrations with support for MySQL &amp; Postgres</span>
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div id="main" class="container">
+			<div class="row">
+				<div class="span3">
+					<div class="well docs-nav" data-spy="affix" data-offset-top="30">
+						<ul class="nav nav-pills">
+							<li><a href="#overview">Overview</a></li>
+							<li><a href="#started">Getting started</a></li>
+							<li><a href="#applying">Running Tasks</a></li>
+							<li><a href="#documentation">Migration Methods</a></li>
+							<li><a href="#extending">Custom Tasks</a></li>
+							<li class="divider"></li>
+							<li class="dropdown">
+								<a href="#" class="dropdown-toggle" data-toggle="dropdown">
+									Download <b class="caret"></b>
+								</a>
+								<ul class="dropdown-menu">
+									<li><a href="https://github.com/ruckus/ruckusing-migrations/zipball/master"><i class="icon-download-alt"></i> Download ZIP File</a></li>
+									<li><a href="https://github.com/ruckus/ruckusing-migrations/tarball/master"><i class="icon-download-alt"></i> Download TAR Ball</a></li>
+								</ul>
+							</li>
+							<li><a href="https://github.com/ruckus/ruckusing-migrations">View On <strong>GitHub</strong></a></li>
+						</ul>
+					</div>
+				</div>
+				<div class="span9">
+					<section id="overview">
+						<h2>Overview</h2>
+						<p>Ruckusing is a framework written in PHP5 for generating and managing a set of "database migrations". Database migrations are declarative files which represent the state of a DB (its tables, columns, indexes, etc) at a particular state of time.</p>
+						<p>By using database migrations, multiple developers can work on the same application and be guaranteed that the application is in a consistent state across all remote developer machines.</p>
+						<p>The idea of the framework was borrowed from the migration system built into Ruby on Rails. Any one who is familiar with Migrations in RoR will be immediately at home.</p>
+						<p><a href="http://travis-ci.org/ruckus/ruckusing-migrations"><img src="https://secure.travis-ci.org/ruckus/ruckusing-migrations.png?branch=master" alt="Build Status" style="max-width:100%;"></a></p>
 
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-  </head>
-  <body>
-    <div class="wrapper">
-      <header>
-        <h1>Ruckusing-migrations</h1>
-        <p>Migrations for PHP ala ActiveRecord Migrations with support for MySQL &amp; Postgres</p>
-        <p class="view"><a href="https://github.com/sweetbee/ruckusing-migrations">View the Project on GitHub <small>sweetbee/ruckusing-migrations</small></a></p>
-        <ul>
-          <li><a href="https://github.com/sweetbee/ruckusing-migrations/zipball/master">Download <strong>ZIP File</strong></a></li>
-          <li><a href="https://github.com/sweetbee/ruckusing-migrations/tarball/master">Download <strong>TAR Ball</strong></a></li>
-          <li><a href="https://github.com/sweetbee/ruckusing-migrations">View On <strong>GitHub</strong></a></li>
-        </ul>
-      </header>
-      <section>
-        <h3>Welcome to GitHub Pages.</h3>
+						<h3 id="features">Features</h3>
+						<ul>
+							<li>
+								<strong>Portability.</strong>
+								<p>The migration files, which describe the tables, columns, indexes, etc to be created are themselves written in pure PHP5 which is then translated to the appropriate SQL at run-time. This allows one to transparently support any RDBMS with a single set of migration files (assuming there is an adapter for it, see below).</p>
+							</li>
+							<li>
+								<strong>Extensibility</strong>
+								<p>The framework is written with extensibility in mind and it is very modular. Support for new RDMBSs should be as easy as creating the appropriate adapter and implementing a single interface.</p>
+							</li>
+							<li>
+								<strong>"rake" like support for basic tasks.</strong>
+								<p>The framework has a concept of "tasks" (in fact the primary focus of the framework, migrations, is just a plain task) which are just basic PHP5 classes which implement an interface. Tasks can be freely written and as long as they adhere to a specific naming convention and implement a specific interface, the framework will automatically register them and allow them to be executed.</p>
+							</li>
+							<li>
+								<strong>Control</strong>
+								<p>The ability to go up or down to a specific migration state.</p>
+							</li>
+							<li>
+								<strong>Generator</strong>
+								<p>Code generator for generating skeleton migration files.</p>
+							</li>
+							<li>
+								<strong>Database tasks</strong>
+								<p>Out-of-the-box support for basic tasks like initializing the DB schema info table (db:setup), asking for the current version (db:version) and dumping the current schema (db:schema).</p>
+							</li>
+						</ul>
 
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
+						<h3 id="requirements">Requirements</h3>
+						<p>PHP 5.2+ is a hard requirement. The framework employs extensive use of object-oriented features of PHP5. There are no plans to make the framework backwards compatible.</p>
+						<p>Optional, but recommended, the <a href="http://phpunit.de/">PHPUnit framework</a> for running the Unit Tests.</p>
 
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
-</code></pre>
+						<h3>Database support</h3>
 
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
+						<ul>
+							<li>Postgres</li>
+							<li>MySQL</li>
+						</ul>
+					</section>
+					<section id="started">
 
-<h3>Designer Templates</h3>
+						<h2>Getting started</h2>
 
-<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
+						<ol>
+							<li>Open terminal and navigate to the root directory of the framework.</li>
+							<li>Modify <code>config/database.inc.php</code> and enter the appropriate information for your local database.</li>
+						</ol>
 
-<h3>Rather Drive Stick?</h3>
 
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
+						<h3>Set up</h3>
+						<p>Open terminal and navigate to the root directory of the framework, then run the following command:</p>
+						<pre class="prettyprint linenums">$ ./ruckus db:setup</pre>
+						<p>This task will create a <code>schema_info</code> table in your DB with a single column, <code>version</code> which is used to keep track of the current version of your DB.</p>
 
-<h3>Authors and Contributors</h3>
 
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
+						<h3>Create your first migration</h3>
+						<pre class="prettyprint linenums">$ ./ruckus db:generate name_of_migration</pre>
 
-<h3>Support or Contact</h3>
+						<p>The second argument is user-specific and is an underscored delimited list of words which describe your migration in human parseable terms. The framework does not care what the file is called, it is just for your sanity.</p>
+						<p>Eg. <code>add_index_to_cities_table</code>, <code>create_orders_table</code> or <code>rename_expertise_column_in_users</code></p>
 
-<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
-      </section>
-    </div>
-    <footer>
-      <p>Project maintained by <a href="https://github.com/sweetbee">sweetbee</a></p>
-      <p>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></p>
-    </footer>
-    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
-    
-  </body>
+						<p>Every time the generator runs it creates a timestamped file of the current time. For example the above generator might create a file like <code>db/migrate/20101103105103_CreateUsersTable.php</code></p>
+						<p>The filename (and class name) is a camel-cased string of the same argument you issued to the command. Open up the newly generated file in your favorite text-editor. The class has two methods, <code>up()</code> and <code>down()</code>.</p>
+
+						<p>The <code>up()</code> method is where you perform actions to be executed as you run migrations that go up the chain of migrations - that is, all migrations that have NOT been executed against your copy of the database that are based in increasing timestamped order.</p>
+
+						<p>The <code>down()</code> method is where you execute actions that should be performed as you go down the chain. In most cases in the <code>down()</code> method you would want to undo what you did in the <code>up()</code> method. That is if you create a new table in the <code>up()</code> method then you would want to drop it in the <code>down()</code> method. </p>
+
+
+						<h3>Execute your migrations</h3>
+						<pre class="prettyprint linenums">$ ./ruckus db:migrate</pre>
+						<p>This command will execute all migrations available, report the output and update your schema info table to the appropriate version.</p>
+
+					</section>
+					<section id="applying">
+						<h2>Running Tasks</h2>
+						<p>The framework ships with some convenient tasks out of the box. All tasks are executed by running the ruckus file followed by specifying the actual task name.</p>
+						<p><strong>Note:</strong> Before trying to run a migration command, open terminal and navigate to the root directory of the framework.</p>
+
+						<h3>Setup</h3>
+						<p>Migrations uses a database to store the current version of your database schema, this task sets that database up and should be run before any other task.</p>
+						<pre class="prettyprint linenums">$ ./ruckus db:setup</pre>
+						<p>Which outputs something like:</p>
+						<pre class="prettyprint linenums">[db setup]:
+Creating table: schema_migrations
+Done.
+Finished: 2007-09-03 9:34pm PDT</pre>
+						<p>This task will create a <code>schema_info</code> table in your DB with a single column, <code>version</code> which is used to keep track of the current version of your DB.</p>
+
+						<h3>Creating a new skeletion file</h3>
+						<p>Each migration must have a unique name, Ruckusing will warn you if your migration name is already in use.</p>
+						<pre class="prettyprint linenums">$ ./ruckus db:generate name_of_migration</pre>
+
+						<h3>Apply migrations</h3>
+						<p>The primary purpose of the framework is to run migrations, and the execution of migrations is all handled by <code>db:migrate</code>.  If no version is specified, all migrations greater than the current database version will be executed.</p>
+						<pre class="prettyprint linenums">$ ./ruckus db:migrate</pre>
+
+						<p>A <code>VERSION</code> parameter can be specified to go up (or down) to a specific version, based on the current version.</p>
+						<pre class="prettyprint linenums">$ ./ruckus db:migrate VERSION=0
+$ ./ruckus db:migrate VERSION=-1</pre>
+
+						<p>Alternatively, specify the timestamp in the filename of the migration to rollback to.</p>
+						<pre class="prettyprint linenums">$ ./ruckus db:migrate VERSION=20121114001742</pre>
+
+
+						<h3>Current database version</h3>
+						<p>It is always possible to ask the framework (really the DB) what version it is currently at.</p>
+						<pre class="prettyprint linenums">$ ./ruckus db:status</pre>
+
+
+						<h3>Dumping the current schema</h3>
+						<p>It can be beneficial to get a dump of the DB in raw SQL format which represents the current version.</p>
+						<p><strong>Note:</strong> This dump only contains the actual schema (e.g. the DML needed to reconstruct the DB), but not any actual data. In MySQL terms, this task would not be the same as running the <code>mysqldump</code> command (which by defaults does include any data in the tables).</p>
+						<pre class="prettyprint linenums">$ ./ruckus db:schema</pre>
+
+						<p>This task generates a file called <code>db/schema.txt</code> which contains the raw SQL needed to re-generate the schema. </p>
+					</section>
+					<section id="documentation">
+						<h2>Migration Methods</h2>
+						<p>All migrations inherit from the <code>Ruckusing_BaseMigration</code> class, so they must be prefixed with <code>$this</code> (e.g. <code>$this->add_column()</code>).</p>
+
+						<h3>Database</h3>
+						<p>There are two database-level operations, <code>create_database</code> and <code>drop_database</code>. Migrations that manipulate databases on this high of a level are used rarely.</p>
+
+
+						<div class="docs">
+							<h4>create_database(database_name)</h4>
+							<p>This command is slightly useless since normally you would be running your migrations against an existing database (created and setup with whatever your traditional RDMBS creation methods are).</p>
+
+							<table class="table table-bordered table-striped">
+								<tr>
+									<th>Parameter</th>
+									<th>Required</th>
+									<th>Type</th>
+									<th>Description</th>
+								</tr>
+								<tr>
+									<td><code>database_name</code></td>
+									<td>yes</td>
+									<td>string</td>
+									<td>The name of the database to be created</td>
+								</tr>
+							</table>
+
+							<pre class="prettyprint linenums">$this->create_database("my_project");</pre>
+						</div>
+
+						<div class="docs">
+							<h4>drop_database(database_name)</h4>
+							<p>To completely remove a database and all of its tables (and data!).</p>
+
+							<table class="table table-bordered table-striped">
+								<tr>
+									<th>Parameter</th>
+									<th>Required</th>
+									<th>Type</th>
+									<th>Description</th>
+								</tr>
+								<tr>
+									<td><code>database_name</code></td>
+									<td>yes</td>
+									<td>string</td>
+									<td>The name of the database to be removed</td>
+								</tr>
+							</table>
+							<pre class="prettyprint linenums">$this->drop_database("my_project");</pre>
+						</div>
+
+						<h3>Table</h3>
+						<p>The database migration framework offers a rich facility for creating, removing and renaming tables.</p>
+
+
+						<div class="docs">
+							<h4>create_table(table_name, options)</h4>
+							<p>This method is probably the most complex of all methods, but also one of the most widely used. <code>$this->create_table(...)</code> returns a <code>TableDefinition</code> object, to which columns can be assigned.</p>
+							<table class="table table-bordered table-striped">
+								<tr>
+									<th>Parameter</th>
+									<th>Required</th>
+									<th>Type</th>
+									<th>Description</th>
+								</tr>
+								<tr>
+									<td><code>table_name</code></td>
+									<td>yes</td>
+									<td>string</td>
+									<td>The name of the table to be created</td>
+								</tr>
+								<tr>
+									<td><code>options</code></td>
+									<td>no</td>
+									<td>array</td>
+									<td>Array of the following name/value pairs:
+										<dl class="dl-horizontal">
+											<dt>id</dt>
+											<dd><strong>Boolean</strong><br />whether or not the framework should automatically generate a primary key. For MySQL the column will be called id and be of type integer with auto-incrementing.</dd>
+
+											<dt>options</dt>
+											<dd><strong>String</strong><br />A string representing finalization parameters that will be passed verbatim to the tail of the create table command. Often this is used to specify the storage engine for MySQL<br />e.g. 'options' => 'Engine=InnoDB'</dd>
+
+											<dt>force<dt>
+											<dd><strong>Boolean</strong><br />try to drop any table with this name before creating the table</dd>
+
+											<dt>temporary</dt>
+											<dd><strong>String</strong><br />If the array contains a key called temporary, table will be created as a temporary table deleted after the current client session terminates. (MySQL only)</dd>
+										</dl>
+									</td>
+								</tr>
+							</table>
+
+							<pre class="prettyprint linenums">$users = $this->create_table("users");
+$users->column("first_name", "string");
+$users->column("last_name", "string");
+$users->finish();</pre>
+						</div>
+						<div class="docs">
+							<h4>drop_table(table_name)</h4>
+							<p>Tables can be removed by using the drop_table method call. As might be expected, removing a table also removes all of its columns and any indexes.</p>
+							<table class="table table-bordered table-striped">
+								<tr>
+									<th>Parameter</th>
+									<th>Required</th>
+									<th>Type</th>
+									<th>Description</th>
+								</tr>
+								<tr>
+									<td><code>table_name</code></td>
+									<td>yes</td>
+									<td>string</td>
+									<td>The name of the table to remove</td>
+								</tr>
+							</table>
+
+							<pre class="prettyprint linenums">$this->drop_table("users");</pre>
+
+						</div>
+						<div class="docs">
+							<h4>rename_table(old_name, new_name)</h4>
+							<p>Tables can be renamed using the rename_table method.</p>
+
+							<table class="table table-bordered table-striped">
+								<tr>
+									<th>Parameter</th>
+									<th>Required</th>
+									<th>Type</th>
+									<th>Description</th>
+								</tr>
+								<tr>
+									<td><code>old_name</code></td>
+									<td>yes</td>
+									<td>string</td>
+									<td>The existing name of the table.</td>
+								</tr>
+								<tr>
+									<td><code>new_name</code></td>
+									<td>yes</td>
+									<td>string</td>
+									<td>The new name of the table.</td>
+								</tr>
+							</table>
+
+							<pre class="prettyprint linenums">$this->rename_table("users", "admins");</pre>
+						</div>
+
+
+						<h3>Column</h3>
+
+						<div class="docs">
+							<h4>add_column(table_name, column_name, type, options)</h4>
+							<table class="table table-bordered table-striped">
+								<tr>
+									<th>Parameter</th>
+									<th>Required</th>
+									<th>Type</th>
+									<th>Description</th>
+								</tr>
+								<tr>
+									<td><code>table_name</code></td>
+									<td>yes</td>
+									<td>string</td>
+									<td>Name of the table to which the column will be added.</td>
+								</tr>
+								<tr>
+									<td><code>column_name</code></td>
+									<td>yes</td>
+									<td>string</td>
+									<td>Name of the column to add.</td>
+								</tr>
+								<tr>
+									<td><code>type</code></td>
+									<td>yes</td>
+									<td>string</td>
+									<td>The generalised type of the column. (see generalised types tab above).</td>
+								</tr>
+								<tr>
+									<td><code>options</code></td>
+									<td>no</td>
+									<td>array</td>
+									<td>Array of the following key/value pairs:
+										<dl class="dl-horizontal">
+											<dt>limit</dt>
+											<dd>
+												<strong>Integer</strong>
+												<br />Size to limit column to
+												<br />eg 'limit' => 32
+											</dd>
+											<dt>precision</dt>
+											<dd>
+												<strong>Integer</strong>
+												<br />eg 'precision' => 10
+											</dd>
+											<dt>scale</dt>
+											<dd>
+												<strong>Integer</strong>
+												<br />eg. 'scale' => 2
+											</dd>
+											<dt>unsigned</dt>
+											<dd>
+												<strong>Boolean</strong>
+												<br />eg. 'unsigned' => true
+											</dd>
+											<dt>collate</dt>
+											<dd>
+												<strong>String</strong>
+												<br />eg. 'collate' => 'utf8_bin'
+											</dd>
+											<dt>default</dt>
+											<dd>
+												<strong>String/Integer/Boolean/Null</strong>
+												<br />eg. 'default' => 'mr.'
+												<br />eg. 'default' => 0
+											</dd>
+											<dt>null</dt>
+											<dd>
+												<strong>Boolean</strong>
+												<br />Whether to allow null values
+												<br />eg. 'null' => false
+											</dd>
+											<dt>primary_key</dt>
+											<dd>
+												<strong>Boolean</strong>
+												<br />Whether this column is the primary key
+												<br />eg. 'primary_key' => true
+											</dd>
+											<dt>auto_increment</dt>
+											<dd>
+												<strong>Boolean</strong>
+												<br />Whether to increment the value
+											</dd>
+											<dt>comment</dt>
+											<dd>
+												<strong>String</strong>
+											</dd>
+											<dt>after</dt>
+											<dd>
+												<strong>String</strong>
+												<br />Add after column name
+											</dd>
+											<dt>character</dt>
+											<dd>
+												<strong>String</strong>
+												<br />Set the character set of the column
+												<br />eg. ‘character’ => ‘latin1’
+											</dd>
+										</dl>
+									</td>
+								</tr>
+							</table>
+
+							<pre class="prettyprint linenums">$this->add_column(‘user’, 'guid', 'integer',
+array('limit' => 10,
+'unsigned' => true,
+'null' => false,
+'auto_increment' => true,
+'primary_key' => true));</pre>
+
+						</div>
+
+						<div class="docs">
+							<h4>change_column(table_name, column_name, type, options)</h4>
+							<p>The type, defaults or NULL support for existing columns can be modified. If you want to just rename a column then use the rename_column method. This method takes a generalized type for the column's type and also an array of options which affects the column definition.</p>
+
+							<table class="table table-bordered table-striped">
+								<tr>
+									<th>Parameter</th>
+									<th>Required</th>
+									<th>Type</th>
+									<th>Description</th>
+								</tr>
+								<tr>
+									<td><code>table_name</code></td>
+									<td>yes</td>
+									<td>string</td>
+									<td>Name of the table from which the column will be altered.</td>
+								</tr>
+								<tr>
+									<td><code>column_name</code></td>
+									<td>yes</td>
+									<td>string</td>
+									<td>Name of the column to alter.</td>
+								</tr>
+								<tr>
+									<td><code>type</code></td>
+									<td>yes</td>
+									<td>string</td>
+									<td>The generalised type of the column. (see generalised types tab above).</td>
+								</tr>
+								<tr>
+									<td><code>options</code></td>
+									<td>no</td>
+									<td>array</td>
+									<td>Array of the following key/value pairs:
+										<dl class="dl-horizontal">
+											<dt>limit</dt>
+											<dd>
+												<strong>Integer</strong>
+												<br />Size to limit column to
+												<br />eg 'limit' => 32
+											</dd>
+											<dt>precision</dt>
+											<dd>
+												<strong>Integer</strong>
+												<br />eg 'precision' => 10
+											</dd>
+											<dt>scale</dt>
+											<dd>
+												<strong>Integer</strong>
+												<br />eg. 'scale' => 2
+											</dd>
+											<dt>unsigned</dt>
+											<dd>
+												<strong>Boolean</strong>
+												<br />eg. 'unsigned' => true
+											</dd>
+											<dt>collate</dt>
+											<dd>
+												<strong>String</strong>
+												<br />eg. 'collate' => 'utf8_bin'
+											</dd>
+											<dt>default</dt>
+											<dd>
+												<strong>String/Integer/Boolean/Null</strong>
+												<br />eg. 'default' => 'mr.'
+												<br />eg. 'default' => 0
+											</dd>
+											<dt>null</dt>
+											<dd>
+												<strong>Boolean</strong>
+												<br />Whether to allow null values
+												<br />eg. 'null' => false
+											</dd>
+											<dt>primary_key</dt>
+											<dd>
+												<strong>Boolean</strong>
+												<br />Whether this column is the primary key
+												<br />eg. 'primary_key' => true
+											</dd>
+											<dt>auto_increment</dt>
+											<dd>
+												<strong>Boolean</strong>
+												<br />Whether to increment the value
+											</dd>
+											<dt>comment</dt>
+											<dd>
+												<strong>String</strong>
+											</dd>
+											<dt>after</dt>
+											<dd>
+												<strong>String</strong>
+												<br />Add after column name
+											</dd>
+											<dt>character</dt>
+											<dd>
+												<strong>String</strong>
+												<br />Set the character set of the column
+												<br />eg. ‘character’ => ‘latin1’
+											</dd>
+										</dl>
+									</td>
+								</tr>
+							</table>
+							<pre class="prettyprint linenums">$this->change_column("users", "first_name", "string", array('limit' => 128));</pre>
+
+						</div>
+
+						<div class="docs">
+							<h4>column(column_name, type, options)</h4>
+							<p>As <code>add_column</code> above, but does not require a table name parameter, and executed on the <code>TableDefinition</code> object returned by <code>create_table</code>.</p>
+							<pre class="prettyprint linenums">$t->column('guid', 'string', array('primary_key' => true, 'limit' => 64));</pre>
+
+
+							<h4>remove_column(table_name, column_name)</h4>
+							<p>Removing a database column is very simple, but keep in mind that any index associated with that column will also be removed.</p>
+							<table class="table table-bordered table-striped">
+								<tr>
+									<th>Parameter</th>
+									<th>Required</th>
+									<th>Type</th>
+									<th>Description</th>
+								</tr>
+								<tr>
+									<td><code>table_name</code></td>
+									<td>yes</td>
+									<td>string</td>
+									<td>Name of the table to remove the column from.</td>
+								</tr>
+								<tr>
+									<td><code>column_name</code></td>
+									<td>yes</td>
+									<td>string</td>
+									<td>Name of the column to remove.</td>
+								</tr>
+							</table>
+							<pre class="prettyprint linenums">$this->remove_column("users", "age");</pre>
+
+						</div>
+
+						<div class="docs">
+							<h4>rename_column(table_name, old_column_name, new_column_name)</h4>
+							<p>Database columns can be renamed (assuming the underlying RDMBS/adapter supports it).</p>
+
+							<table class="table table-bordered table-striped">
+								<tr>
+									<th>Parameter</th>
+									<th>Required</th>
+									<th>Type</th>
+									<th>Description</th>
+								</tr>
+								<tr>
+									<td><code>table_name</code></td>
+									<td>yes</td>
+									<td>string</td>
+									<td>Name of the table from which the column is to be renamed.</td>
+								</tr>
+								<tr>
+									<td><code>old_column_name</code></td>
+									<td>yes</td>
+									<td>string</td>
+									<td>The old name of the column.</td>
+								</tr>
+								<tr>
+									<td><code>new_column_name</code></td>
+									<td>yes</td>
+									<td>string</td>
+									<td>The new name of the column.</td>
+								</tr>
+							</table>
+							<pre class="prettyprint linenums">$this->rename_column("users", "first_name", "fname");</pre>
+						</div>
+
+						<h3>Indexes</h3>
+						<p>Indexes can be created and removed using the framework methods.</p>
+
+						<div class="docs">
+							<h4>add_index(table_name, column_name, options)</h4>
+							<table class="table table-bordered table-striped">
+								<tr>
+									<th>Parameter</th>
+									<th>Required</th>
+									<th>Type</th>
+									<th>Description</th>
+								</tr>
+								<tr>
+									<td><code>table_name</code></td>
+									<td>yes</td>
+									<td>string</td>
+									<td>The name of the table to add an index for</td>
+								</tr>
+								<tr>
+									<td><code>column_name</code></td>
+									<td>yes</td>
+									<td>string/array</td>
+									<td>The name of the column to add an index for, or an array of column names</td>
+								</tr>
+								<tr>
+									<td><code>options</code></td>
+									<td>no</td>
+									<td>array</td>
+									<td>Array of the following key/value pairs:
+										<dl class="dl-horizontal">
+											<dt>unique</dt>
+											<dd>
+												<strong>Boolean</strong><br />
+												Whether to create a unique index for this column.
+											</dd>
+
+											<dt>name</dt>
+											<dd>
+												<strong>String</strong><br />
+												The user defined name of the index.
+											</dd>
+
+										</dl>
+									</td>
+								</tr>
+							</table>
+
+							<pre class="prettyprint linenums">$this->add_index("posts", "blog_id", array('name' => 'index_on_blog_id'));
+$this->add_index("users", "ssn", array('unique' => true)));
+$this->add_index("users", array('email', 'ssn') );</pre>
+
+							<h5>Known issues</h5>
+							<p>MySQL is currently limited to 64 characters for identifier names. When add_index is used without specifying the name of the index, Ruckusing will generate a suitable name based on the table name and the column(s) being index. For example, if there is a users table and an index is being generated on the username column then the generated index name would be: idx_users_username . If one is attempting to add a multi-column index then its very possible that the generated name would be longer than MySQL's limit of 64 characters. In such situations Ruckusing will raise an error suggesting you use a custom index name via the name option parameter.</p>
+
+						</div>
+
+						<div class="docs">
+							<h4>remove_index(table_name, column_name, options)</h4>
+
+							<p>If the index was created using the sibling to this method, <code>add_index</code> then one would need to just specify the same arguments to that method (but calling <code>remove_index</code>).</p>
+							<p><strong>Note:</strong> if a name has been specified for the index, the index must be removed using the name value.</p>
+
+							<table class="table table-bordered table-striped">
+								<tr>
+									<th>Parameter</th>
+									<th>Required</th>
+									<th>Type</th>
+									<th>Description</th>
+								</tr>
+								<tr>
+									<td><code>table_name</code></td>
+									<td>yes</td>
+									<td>string</td>
+									<td>The name of the table to remove an index from.</td>
+								</tr>
+								<tr>
+									<td><code>column_name</code></td>
+									<td>yes</td>
+									<td>string/array</td>
+									<td>The name of the column to remove an index from, or an array of column names.</td>
+								</tr>
+								<tr>
+									<td><code>options</code></td>
+									<td>no</td>
+									<td>arrat</td>
+									<td>Array of the following key/value pairs:
+										<dl class="dl-horizontal">
+											<dt>name</dt>
+											<dd>
+												<strong>String</strong><br />
+												The name of the index to remove. If not specified, a default name will be generated based on the table and column name. If during the index creation process (using the add_index method) and a name is specified then you will need to do the same here and specify the same name. Otherwise, the default name that is generated will likely not match with the actual name of the index.
+											</dd>
+										</dl>
+									</td>
+								</tr>
+							</table>
+
+							<pre class="prettyprint">$this->remove_index("users", "email");
+$this->remove_index("users", array("email", "ssn") );
+$this->remove_index("users", "email", array('name' => "index_on_email_column") );</pre>
+						</div>
+
+
+						<h3>Queries</h3>
+						<p>Arbitrary query execution is available via a set of methods.</p>
+
+						<div class="docs">
+							<h4>execute(query)</h4>
+							<p>The <code>execute()</code> method is intended for queries which do not return any data, e.g. INSERT, UPDATE or DELETE.</p>
+
+							<table class="table table-bordered table-striped">
+								<tr>
+									<th>Parameter</th>
+									<th>Required</th>
+									<th>Type</th>
+									<th>Description</th>
+								</tr>
+								<tr>
+									<td><code>query</code></td>
+									<td>yes</td>
+									<td>string</td>
+									<td>Query to be run</td>
+								</tr>
+							</table>
+
+							<pre class="prettyprint linenums">$this->execute("UPDATE foo SET name = 'bar' WHERE .... ");</pre>
+						</div>
+
+						<div class="docs">
+							<h4>select_one(query)</h4>
+							<p><code>select_one()</code> is intended for queries where you are expecting a single result set.</p>
+
+							<table class="table table-bordered table-striped">
+								<tr>
+									<th>Parameter</th>
+									<th>Required</th>
+									<th>Type</th>
+									<th>Description</th>
+								</tr>
+								<tr>
+									<td><code>query</code></td>
+									<td>yes</td>
+									<td>string</td>
+									<td>Query to be run</td>
+								</tr>
+							</table>
+
+							<pre class="prettyprint linenums">$result = $this->select_one("SELECT SUM(price) AS total_price FROM orders");
+
+if($result) {
+	echo "Your revenue is: " . $result['total_price'];
+}</pre>
+
+						</div>
+
+
+						<div class="docs">
+							<h4>select_all(query)</h4>
+							<p><code>select_all()</code> is intended for all other cases (where you might not necessarily know how many rows you will be getting).</p>
+							<table class="table table-bordered table-striped">
+								<tr>
+									<th>Parameter</th>
+									<th>Required</th>
+									<th>Type</th>
+									<th>Description</th>
+								</tr>
+								<tr>
+									<td><code>query</code></td>
+									<td>yes</td>
+									<td>string</td>
+									<td>Query to be run</td>
+								</tr>
+							</table>
+
+							<pre class="prettyprint linenums">$result = $this->select_all("SELECT email, first_name, last_name FROM users"
+	."WHERE created_at >= SUBDATE( NOW(), INTERVAL 7 DAY)");
+
+if($result) {
+	echo "New customers: (" . count($result) . ")\n"
+	foreach($result as $row) {
+		print $row['email'].' '.$row['first_name'].' '.$row['last_name'];
+	}
+}</pre>
+						</div>
+
+
+						<h3>Generalised types</h3>
+						<p>All columns in a database are really just specific types of a generalized form. That is, a varchar(32) column is really just a string that happens to have a max-length of 32. Same for int(8), its just a number with a maximum value of 99999999.</p>
+						<p>The framework can take advantage of this fact to offer generalized types (with sane defaults) and the support for specifying exact details.</p>
+
+						<table class="table table-bordered table-striped">
+							<tr>
+								<th>Value</th>
+								<th>MySQL</th>
+								<th>PostgreSQL</th>
+							</tr>
+							<tr>
+								<td><code>biginteger</code></td>
+								<td>bigint</td>
+								<td>bigint</td>
+							</tr>
+							<tr>
+								<td><code>binary</code></td>
+								<td>blob</td>
+								<td>bytea</td>
+							</tr>
+							<tr>
+								<td><code>boolean</code></td>
+								<td>tinyint(1)</td>
+								<td>boolean</td>
+							</tr>
+							<tr>
+								<td><code>date</code></td>
+								<td>date</td>
+								<td>date</td>
+							</tr>
+							<tr>
+								<td><code>datetime</code></td>
+								<td>datetime</td>
+								<td>timestamp</td>
+							</tr>
+							<tr>
+								<td><code>decimal</code></td>
+								<td>decimal(precision=10, scale=0)</td>
+								<td>decimal(precision=10, scale=0)</td>
+							</tr>
+							<tr>
+								<td><code>enum</code></td>
+								<td>enum</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td><code>float</code></td>
+								<td>float</td>
+								<td>float</td>
+							</tr>
+							<tr>
+								<td><code>integer</code></td>
+								<td>int(11)</td>
+								<td>integer</td>
+							</tr>
+							<tr>
+								<td><code>mediuminteger</code></td>
+								<td>mediumint</td>
+								<td>integer</td>
+							</tr>
+							<tr>
+								<td><code>mediumtext</code></td>
+								<td>mediumtext</td>
+								<td>text</td>
+							</tr>
+							<tr>
+								<td><code>primary_key</code></td>
+								<td>int(11)</td>
+								<td>serial</td>
+							</tr>
+							<tr>
+								<td><code>smallinteger</code></td>
+								<td>smallint</td>
+								<td>smallint</td>
+							</tr>
+							<tr>
+								<td><code>string</code></td>
+								<td>varchar(255)</td>
+								<td>varchar(255)</td>
+							</tr>
+							<tr>
+								<td><code>text</code></td>
+								<td>text</td>
+								<td>text</td>
+							</tr>
+							<tr>
+								<td><code>time</code></td>
+								<td>time</td>
+								<td>time</td>
+							</tr>
+							<tr>
+								<td><code>timestamp</code></td>
+								<td>timestamp</td>
+								<td>timestamp</td>
+							</tr>
+							<tr>
+								<td><code>tinyinteger</code></td>
+								<td>tinyint</td>
+								<td>smallint</td>
+							</tr>
+							<tr>
+								<td><code>tinytext</code></td>
+								<td>tinytext</td>
+								<td>text</td>
+							</tr>
+							<tr>
+								<td><code>tsvector</code></td>
+								<td></td>
+								<td>tsvector</td>
+							</tr>
+						</table>
+					</section>
+					<section id="extending">
+						<h2>Custom tasks</h2>
+						<p>All tasks follow a basic naming and structure convention. It is this structure and their placement in the <code>lib/tasks</code> directory which allows the framework to automatically find the tasks and register them for use.</p>
+
+						<h3>Naming Conventions</h3>
+						<p>In a nutshell, task names are pseudo-namespaced. The tasks that come with the framework are namespaced to "db" (e.g. the tasks are "db:migrate", "db:setup", etc).</p>
+						<p>Based on this structure, the task file names are the namespace portion upper-cased, followed by the remainder, with its first letter capitalized. And then the file name is prefixed with <code>class</code>.</p>
+						<p>For example:</p>
+						<ul>
+							<li><code>db:migrate</code> is named <code>class.Ruckusing_DB_Migrate.php</code></li>
+							<li><code>db:setup</code> is named <code>class.Ruckusing_DB_Setup.php</code></li>
+						</ul>
+
+						<h3>Interface implementation</h3>
+						<p>All tasks must implement the <code>lib/classes/task/class.Ruckusing_iTask.php</code> interface (named appropriately enough <code>iTask</code>), which currently just has one method: <code>execute()</code>.</p>
+						<p>Your <code>execute()</code> method can do whatever you want.</p>
+
+						<h3>Objects made available to your task</h3>
+						<p>The framework will automatically make available an object representing the RDBMS adapter object via the <code>adapter</code> private property.</p>
+						<p>For example: </p>
+
+						<pre class="prettyprint linenums">$result = $this->adapter-> ... </pre>
+
+						<h3>Running your tasks</h3>
+						<p>If you named your task according to the above conventions and wrote your task to implement the <code>iTask</code> interface and placed the task file in <code>lib/tasks</code> then your task will automatically be made available and thereby executable via the <code>ruckus</code> wrapper.</p>
+						<p>For example lets say you wrote a task file with a name of <code>class.Ruckusing_FS_Hello.php</code>, placed it in the <code>lib/tasks</code> directory, then it would be available via: </p>
+
+						<pre class="prettyprint linenums">$ ./ruckus fs:hello</pre>
+					</section>
+				</div>
+			</div>
+		</div>
+
+		<footer class="footer">
+			<div class="container">
+      			<p>Project maintained by <a href="https://github.com/ruckus">ruckus</a></p>
+      		</div>
+		</footer>
+
+		<script src="assets/js/jquery.js"></script>
+		<script src="assets/js/bootstrap.min.js"></script>
+	</body>
 </html>
