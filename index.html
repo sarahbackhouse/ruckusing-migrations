@@ -13,10 +13,11 @@
     		.footer		{ background-color: #F5F5F5; border-top: 1px solid #E5E5E5; margin-top: 70px; padding: 30px 0;  }
     		.footer p	{ color: #777777; font-size: 12px; font-weight: 200; text-shadow: 0 1px 0 #FFFFFF;}
     		.separator 	{ margin: 40px 0 39px; }
-    		.docs-nav	{ width: 180px; }
+    		.docs-nav	{ width: 200px; }
     		section		{ padding: 100px 0 0 0;}
     		.span9 section:first-child { padding: 0;}
-    		.docs		{ margin: 50px 0;}
+    		.docs		{ margin: 30px 0 5px;}
+    		h3			{ margin: 30px 0 5px;}
 
     	</style>
 	</head>
@@ -38,13 +39,14 @@
 		<div id="main" class="container">
 			<div class="row">
 				<div class="span3">
-					<div class="well docs-nav" data-spy="affix" data-offset-top="30">
+					<div class="docs-nav" data-spy="affix" data-offset-top="30">
 						<ul class="nav nav-pills">
 							<li><a href="#overview">Overview</a></li>
-							<li><a href="#started">Getting started</a></li>
 							<li><a href="#applying">Running Tasks</a></li>
 							<li><a href="#documentation">Migration Methods</a></li>
 							<li><a href="#extending">Custom Tasks</a></li>
+							<li><a href="#started">Getting started</a></li>
+							<li><a href="#deployment">Application Deployment & Capistrano</a></li>
 							<li class="divider"></li>
 							<li class="dropdown">
 								<a href="#" class="dropdown-toggle" data-toggle="dropdown">
@@ -106,41 +108,6 @@
 							<li>MySQL</li>
 						</ul>
 					</section>
-					<section id="started">
-
-						<h2>Getting started</h2>
-
-						<ol>
-							<li>Open terminal and navigate to the root directory of the framework.</li>
-							<li>Modify <code>config/database.inc.php</code> and enter the appropriate information for your local database.</li>
-						</ol>
-
-
-						<h3>Set up</h3>
-						<p>Open terminal and navigate to the root directory of the framework, then run the following command:</p>
-						<pre class="prettyprint linenums">$ ./ruckus db:setup</pre>
-						<p>This task will create a <code>schema_info</code> table in your DB with a single column, <code>version</code> which is used to keep track of the current version of your DB.</p>
-
-
-						<h3>Create your first migration</h3>
-						<pre class="prettyprint linenums">$ ./ruckus db:generate name_of_migration</pre>
-
-						<p>The second argument is user-specific and is an underscored delimited list of words which describe your migration in human parseable terms. The framework does not care what the file is called, it is just for your sanity.</p>
-						<p>Eg. <code>add_index_to_cities_table</code>, <code>create_orders_table</code> or <code>rename_expertise_column_in_users</code></p>
-
-						<p>Every time the generator runs it creates a timestamped file of the current time. For example the above generator might create a file like <code>db/migrate/20101103105103_CreateUsersTable.php</code></p>
-						<p>The filename (and class name) is a camel-cased string of the same argument you issued to the command. Open up the newly generated file in your favorite text-editor. The class has two methods, <code>up()</code> and <code>down()</code>.</p>
-
-						<p>The <code>up()</code> method is where you perform actions to be executed as you run migrations that go up the chain of migrations - that is, all migrations that have NOT been executed against your copy of the database that are based in increasing timestamped order.</p>
-
-						<p>The <code>down()</code> method is where you execute actions that should be performed as you go down the chain. In most cases in the <code>down()</code> method you would want to undo what you did in the <code>up()</code> method. That is if you create a new table in the <code>up()</code> method then you would want to drop it in the <code>down()</code> method. </p>
-
-
-						<h3>Execute your migrations</h3>
-						<pre class="prettyprint linenums">$ ./ruckus db:migrate</pre>
-						<p>This command will execute all migrations available, report the output and update your schema info table to the appropriate version.</p>
-
-					</section>
 					<section id="applying">
 						<h2>Running Tasks</h2>
 						<p>The framework ships with some convenient tasks out of the box. All tasks are executed by running the ruckus file followed by specifying the actual task name.</p>
@@ -163,6 +130,9 @@ Finished: 2007-09-03 9:34pm PDT</pre>
 						<h3>Apply migrations</h3>
 						<p>The primary purpose of the framework is to run migrations, and the execution of migrations is all handled by <code>db:migrate</code>.  If no version is specified, all migrations greater than the current database version will be executed.</p>
 						<pre class="prettyprint linenums">$ ./ruckus db:migrate</pre>
+
+						<p>The <code>ENV</code> command line parameter can be used to specify a different database to run against, as specific in the configuration file.</p>
+						<pre class="prettyprint linenums">$ ./ruckus db:migrate ENV=production</pre>
 
 						<p>A <code>VERSION</code> parameter can be specified to go up (or down) to a specific version, based on the current version.</p>
 						<pre class="prettyprint linenums">$ ./ruckus db:migrate VERSION=0
@@ -211,6 +181,7 @@ $ ./ruckus db:migrate VERSION=-1</pre>
 								</tr>
 							</table>
 
+							<h5>Example</h5>
 							<pre class="prettyprint linenums">$this->create_database("my_project");</pre>
 						</div>
 
@@ -232,6 +203,7 @@ $ ./ruckus db:migrate VERSION=-1</pre>
 									<td>The name of the database to be removed</td>
 								</tr>
 							</table>
+							<h5>Example</h5>
 							<pre class="prettyprint linenums">$this->drop_database("my_project");</pre>
 						</div>
 
@@ -241,7 +213,16 @@ $ ./ruckus db:migrate VERSION=-1</pre>
 
 						<div class="docs">
 							<h4>create_table(table_name, options)</h4>
-							<p>This method is probably the most complex of all methods, but also one of the most widely used. <code>$this->create_table(...)</code> returns a <code>TableDefinition</code> object, to which columns can be assigned.</p>
+							<p>This method is probably the most complex of all methods, but also one of the most widely used. <code>$this->create_table()</code> returns a <code>TableDefinition</code> object, to which columns can be assigned using the <code>column()</code> method.</p>
+							<p>The steps for creating a new table are:</p>
+
+							<ul>
+								<li>Create the table with a name and any optional options and store the return value for later use</li>
+								<li>Add columns to the table definition</li>
+								<li>Call <code>finish()</code> to actually create the table with the definition and its columns</li>
+							</ul>
+
+							<p><strong>Note:</strong> Unless the <code>id</code> value in the <code>options</code> array is set to false, a primary key column will be auto-generated when a table is created. This column will be called <code>id</code>, be of type <code>integer</code> and be auto-incrementing.</p>
 							<table class="table table-bordered table-striped">
 								<tr>
 									<th>Parameter</th>
@@ -277,6 +258,7 @@ $ ./ruckus db:migrate VERSION=-1</pre>
 								</tr>
 							</table>
 
+							<h5>Example</h5>
 							<pre class="prettyprint linenums">$users = $this->create_table("users");
 $users->column("first_name", "string");
 $users->column("last_name", "string");
@@ -300,6 +282,7 @@ $users->finish();</pre>
 								</tr>
 							</table>
 
+							<h5>Example</h5>
 							<pre class="prettyprint linenums">$this->drop_table("users");</pre>
 
 						</div>
@@ -328,6 +311,7 @@ $users->finish();</pre>
 								</tr>
 							</table>
 
+							<h5>Example</h5>
 							<pre class="prettyprint linenums">$this->rename_table("users", "admins");</pre>
 						</div>
 
@@ -359,7 +343,7 @@ $users->finish();</pre>
 									<td><code>type</code></td>
 									<td>yes</td>
 									<td>string</td>
-									<td>The generalised type of the column. (see generalised types tab above).</td>
+									<td>The generalised type of the column. (see generalised types below).</td>
 								</tr>
 								<tr>
 									<td><code>options</code></td>
@@ -436,18 +420,20 @@ $users->finish();</pre>
 								</tr>
 							</table>
 
+							<h5>Example</h5>
 							<pre class="prettyprint linenums">$this->add_column(‘user’, 'guid', 'integer',
-array('limit' => 10,
-'unsigned' => true,
-'null' => false,
-'auto_increment' => true,
-'primary_key' => true));</pre>
+	array('limit' => 10,
+	'unsigned' => true,
+	'null' => false,
+	'auto_increment' => true,
+	'primary_key' => true));</pre>
 
 						</div>
 
 						<div class="docs">
 							<h4>change_column(table_name, column_name, type, options)</h4>
-							<p>The type, defaults or NULL support for existing columns can be modified. If you want to just rename a column then use the rename_column method. This method takes a generalized type for the column's type and also an array of options which affects the column definition.</p>
+							<p>The type and options of existing columns can be modified. If you want to just rename a column then use the <code>rename_column()</code> method below.</p>
+							<p>This method takes a generalized type for the column's type and also an array of options which affects the column definition.</p>
 
 							<table class="table table-bordered table-striped">
 								<tr>
@@ -472,7 +458,7 @@ array('limit' => 10,
 									<td><code>type</code></td>
 									<td>yes</td>
 									<td>string</td>
-									<td>The generalised type of the column. (see generalised types tab above).</td>
+									<td>The generalised type of the column. (see generalised types below).</td>
 								</tr>
 								<tr>
 									<td><code>options</code></td>
@@ -548,6 +534,7 @@ array('limit' => 10,
 									</td>
 								</tr>
 							</table>
+							<h5>Example</h5>
 							<pre class="prettyprint linenums">$this->change_column("users", "first_name", "string", array('limit' => 128));</pre>
 
 						</div>
@@ -555,8 +542,10 @@ array('limit' => 10,
 						<div class="docs">
 							<h4>column(column_name, type, options)</h4>
 							<p>As <code>add_column</code> above, but does not require a table name parameter, and executed on the <code>TableDefinition</code> object returned by <code>create_table</code>.</p>
+							<h5>Example</h5>
 							<pre class="prettyprint linenums">$t->column('guid', 'string', array('primary_key' => true, 'limit' => 64));</pre>
-
+						</div>
+						<div class="docs">
 
 							<h4>remove_column(table_name, column_name)</h4>
 							<p>Removing a database column is very simple, but keep in mind that any index associated with that column will also be removed.</p>
@@ -580,6 +569,7 @@ array('limit' => 10,
 									<td>Name of the column to remove.</td>
 								</tr>
 							</table>
+							<h5>Example</h5>
 							<pre class="prettyprint linenums">$this->remove_column("users", "age");</pre>
 
 						</div>
@@ -614,6 +604,7 @@ array('limit' => 10,
 									<td>The new name of the column.</td>
 								</tr>
 							</table>
+							<h5>Example</h5>
 							<pre class="prettyprint linenums">$this->rename_column("users", "first_name", "fname");</pre>
 						</div>
 
@@ -664,6 +655,7 @@ array('limit' => 10,
 								</tr>
 							</table>
 
+							<h5>Example</h5>
 							<pre class="prettyprint linenums">$this->add_index("posts", "blog_id", array('name' => 'index_on_blog_id'));
 $this->add_index("users", "ssn", array('unique' => true)));
 $this->add_index("users", array('email', 'ssn') );</pre>
@@ -714,6 +706,7 @@ $this->add_index("users", array('email', 'ssn') );</pre>
 								</tr>
 							</table>
 
+							<h5>Example</h5>
 							<pre class="prettyprint">$this->remove_index("users", "email");
 $this->remove_index("users", array("email", "ssn") );
 $this->remove_index("users", "email", array('name' => "index_on_email_column") );</pre>
@@ -722,6 +715,7 @@ $this->remove_index("users", "email", array('name' => "index_on_email_column") )
 
 						<h3>Queries</h3>
 						<p>Arbitrary query execution is available via a set of methods.</p>
+						<p><strong>Note:</strong> Since these methods take raw SQL queries as input, they might not necessarily be portable across all RDBMS.</p>
 
 						<div class="docs">
 							<h4>execute(query)</h4>
@@ -742,13 +736,14 @@ $this->remove_index("users", "email", array('name' => "index_on_email_column") )
 								</tr>
 							</table>
 
+							<h5>Example</h5>
 							<pre class="prettyprint linenums">$this->execute("UPDATE foo SET name = 'bar' WHERE .... ");</pre>
 						</div>
 
 						<div class="docs">
 							<h4>select_one(query)</h4>
 							<p><code>select_one()</code> is intended for queries where you are expecting a single result set.</p>
-
+							<p>Returns an associative array of the column names and their values.</p>
 							<table class="table table-bordered table-striped">
 								<tr>
 									<th>Parameter</th>
@@ -764,6 +759,7 @@ $this->remove_index("users", "email", array('name' => "index_on_email_column") )
 								</tr>
 							</table>
 
+							<h5>Example</h5>
 							<pre class="prettyprint linenums">$result = $this->select_one("SELECT SUM(price) AS total_price FROM orders");
 
 if($result) {
@@ -776,6 +772,7 @@ if($result) {
 						<div class="docs">
 							<h4>select_all(query)</h4>
 							<p><code>select_all()</code> is intended for all other cases (where you might not necessarily know how many rows you will be getting).</p>
+							<p>Returns an associative array with each element of the array being itself another associative array of the column names and their values.</p>
 							<table class="table table-bordered table-striped">
 								<tr>
 									<th>Parameter</th>
@@ -791,6 +788,7 @@ if($result) {
 								</tr>
 							</table>
 
+							<h5>Example</h5>
 							<pre class="prettyprint linenums">$result = $this->select_all("SELECT email, first_name, last_name FROM users"
 	."WHERE created_at >= SUBDATE( NOW(), INTERVAL 7 DAY)");
 
@@ -943,6 +941,125 @@ if($result) {
 						<p>For example lets say you wrote a task file with a name of <code>class.Ruckusing_FS_Hello.php</code>, placed it in the <code>lib/tasks</code> directory, then it would be available via: </p>
 
 						<pre class="prettyprint linenums">$ ./ruckus fs:hello</pre>
+					</section>
+
+					<section id="started">
+
+						<h2>Getting started</h2>
+
+						<p>Let's see an example to get started, for the purpose of the example, we'll be setting up a table for storing user details. Before we start, open terminal, navigate to the root directory of the framework and modify <code>config/database.inc.php</code>. Enter the appropriate information for your local database.</p>
+
+						<h3>Set up</h3>
+						<p>Migrations requires a single table to keep track of the current version of your database. To create this table, run the following command:</p>
+						<pre class="prettyprint linenums">$ ./ruckus db:setup</pre>
+						<p>This task will create a <code>schema_info</code> table in your database with a single column, <code>version</code>. You only need to run setup once.</p>
+
+
+						<h3>Create your first migration</h3>
+						<p>Migrations includes a task to create the skeleton of a migration file, to do this we run:</p>
+						<pre class="prettyprint linenums">$ ./ruckus db:generate create_users_table</pre>
+						<p>Every time the generator runs it creates a timestamped file of the current time. The above generator might create a file like <code>db/migrate/20101103105103_CreateUsersTable.php</code></p>
+						<p>The filename (and class name) is a camel-cased string of the same argument you issued to the command.</p>
+						<p>Open up the newly generated file in your favorite text-editor. The class has two methods, <code>up()</code> and <code>down()</code>.</p>
+
+
+						<h3>Creating a table</h3>
+						<p>The <code>up()</code> method is where you perform actions to be executed as you run migrations that go up the chain of migrations - that is, all migrations that have not been executed against your copy of the database that are based in increasing timestamped order.</p>
+						<p>Assuming our database has been created in advance, our first task is add code to the <code>up()</code> method, to create a user table using the <code>create_table()</code> method.</p>
+
+						<pre class="prettyprint linenums">$users = $this->create_table('user');</pre>
+
+						<h3>Adding columns</h3>
+						<p>With the <code>TableDefinition</code> object returned by <code>create_table()</code>, we can now add a column called <code>first_name</code> with a default length of 255:</p>
+						<pre class="prettyprint linenums">$users->column("first_name", "string");</pre>
+
+						<p>When this migrations are run, this will generate the following SQL: </p>
+						<pre class="prettyprint linenums">`first_name` varchar(255) NULL</pre>
+
+						<p>We can also create <code>last_name</code>, <code>title</code>, <code>post_count</code> and <code>created_at</code> columns:</p>
+						<pre class="prettyprint linenums">$users->column("last_name", "string", array('limit' => 32));
+$users->column("title", "string",
+		array('limit' => 64, 'default' => 'mr.', 'null' => false));
+$users->column("post_count", "integer",
+		array('limit' => 4, 'default' => 0, 'null' => false));
+$users->column("created_at", "datetime", array('null' => false));</pre>
+
+						<p>These methods will generate the following SQL:</p>
+						<pre class="prettyprint linenums">`last_name` varchar(32) NULL
+`title` varchar(64) DEFAULT 'mr.' NOT NULL
+`post_count` integer(4) DEFAULT 0 NOT NULL
+`created_at` datetime NOT NULL</pre>
+
+						<p>With the table and column details entered, we can now call the <code>finish()</code> method to actually create the table with the definition and its columns</p>
+
+						<pre class="prettyprint linenums">$users->finish();</pre>
+
+						<h3>Adding a down() Method</h3>
+						<p>Having completed the changes for the <code>up()</code> method, we should now add to the <code>down()</code> method.</p>
+						<p>The <code>down()</code> method is where you execute actions that should be performed as you go down the chain. In most cases in the <code>down()</code> method you would want to undo what you did in the <code>up()</code> method. That is if you create a new table in the <code>up()</code> method then you would want to drop it in the <code>down()</code> method. </p>
+
+						<p>To drop the user table we add:</p>
+						<pre class="prettyprint linenums">$this->drop_table('user');</pre>
+
+						<p>Our complete migration file should look as follows:</p>
+
+						<pre class="prettyprint linenums">
+&lt;?php
+  class CreateUsersTable extends Ruckusing_BaseMigration {
+
+    public function up() {
+      $users = $this->create_table('user');
+      $users->column("first_name", "string");
+      $users->column("last_name", "string", array('limit' => 32));
+      $users->column("title", "string",
+		array('limit' => 64, 'default' => 'mr.', 'null' => false));
+      $users->column("post_count", "integer",
+		array('limit' => 4, 'default' => 0, 'null' => false));
+      $users->column("created_at", "datetime", array('null' => false));
+      $users->finish();
+    }
+
+    public function down() {
+      $this->drop_table('user');;
+    }
+  }
+?&gt;</pre>
+
+
+						<h3>Execute your migration</h3>
+
+						<p>With our code complete we can now run our migration script:</p>
+						<pre class="prettyprint linenums">$ ./ruckus db:migrate</pre>
+						<p>This command will execute all migrations available, report the output and update your schema info table to the appropriate version.</p>
+						<p>The output in terminal should look something like this:</p>
+						<pre class="prettyprint linenums">$ ./ruckus db:migrate
+
+  Started: 2010-09-03 9:26pm PDT
+
+  [db:migrate]:
+          Migrating UP to: 4 (current version: 0)
+  ========= CreateUsersTable ======== (0.11)
+
+  Finished: 2010-09-03 9:26pm PDT</pre>
+					</section>
+
+					<section id="deployment">
+						<h2>Application Deployment & Capistrano</h2>
+						<p>The framework is configured to recognize <code>development</code>, <code>test</code> and <code>production</code> environments out of the box. As such, migrations can be issued against any environment, whether its a local or remote server (assuming the network / remote server is configured to allow for connections from your current location).</p>
+						<p>Because migrations represent incremental changes, they are a great for deployment of your application. With just a single command line parameter, the migrations can be altered from running against the default <code>development</code> database to <code>production</code> instead.</p>
+						<h3>Details</h3>
+						<p>By default a call to <code>migrate</code> will run against the <code>development</code> database specified in <codE>config/database.inc.php</code>.</p>
+						<pre class="prettyprint linenums">$ ./ruckus db:migrate</pre>
+						<p>The <code>ENV</code> command line parameter can be used to specify a different database to run against, as specific in the configuration file.</p>
+						<p>For example, to run against the <code>production</code> database (as specified in <code>config/database.inc.php</code>):</p>
+						<pre class="prettyprint linenums">$ ./ruckus db:migrate ENV=production</pre>
+						<h3>Migrating via Capistrano</h3>
+						<p>To hook into the Capistrano "deploy:migrations" point, put this in your recipe:</p>
+						<pre class="prettyprint linenums">desc "Run Ruckusing Migrations"
+task :migrations, :role => :db do
+  run "cd #{latest_release}/path/to/ruckusing && php ruckus.php db:migrate ENV=#{stage}"
+end</pre>
+						<p>The above assumes you're using the "staging" Capistrano facility so that the stage variable contains one of "development", "staging" or "production", etc.</p>
 					</section>
 				</div>
 			</div>
