@@ -18,7 +18,6 @@
     		.span9 section:first-child { padding: 0;}
     		.docs		{ margin: 30px 0 5px;}
     		h3			{ margin: 30px 0 5px;}
-
     	</style>
 	</head>
 	<body data-target=".docs-nav" data-spy="scroll" onload="prettyPrint();">
@@ -42,10 +41,11 @@
 					<div class="docs-nav" data-spy="affix" data-offset-top="30">
 						<ul class="nav nav-pills">
 							<li><a href="#overview">Overview</a></li>
+							<li><a href="#started">Getting started</a></li>
+							<li><a href="#configuration">Configuration</a></li>
 							<li><a href="#applying">Running Tasks</a></li>
 							<li><a href="#documentation">Migration Methods</a></li>
 							<li><a href="#extending">Custom Tasks</a></li>
-							<li><a href="#started">Getting started</a></li>
 							<li><a href="#deployment">Application Deployment & Capistrano</a></li>
 							<li class="divider"></li>
 							<li class="dropdown">
@@ -107,6 +107,172 @@
 							<li>Postgres</li>
 							<li>MySQL</li>
 						</ul>
+					</section>
+
+					<section id="started">
+
+						<h2>Getting started</h2>
+
+						<p>Let's see an example to get started, for the purpose of the example, we'll be setting up a table for storing user details. Before we start, open terminal, navigate to the root directory of the framework and modify <code>config/database.inc.php</code>. Enter the appropriate information for your local database, as described in the <a href="#configuration">configuration section</a>.</p>
+
+						<h3>Set up</h3>
+						<p>Migrations requires a single table to keep track of the current version of your database. To create this table, run the following command:</p>
+						<pre class="prettyprint linenums">$ ./ruckus.php db:setup</pre>
+						<p>This task will create a <code>schema_info</code> table in your database with a single column, <code>version</code>. You only need to run setup once.</p>
+
+
+						<h3>Create your first migration</h3>
+						<p>Migrations includes a task to create the skeleton of a migration file, to do this we run:</p>
+						<pre class="prettyprint linenums">$ ./ruckus.php db:generate create_users_table</pre>
+						<p>Every time the generator runs it creates a timestamped file of the current time. The above generator might create a file like <code>db/migrate/20101103105103_CreateUsersTable.php</code></p>
+						<p>The filename (and class name) is a camel-cased string of the same argument you issued to the command.</p>
+						<p>Open up the newly generated file in your favorite text-editor. The class has two methods, <code>up()</code> and <code>down()</code>.</p>
+
+
+						<h3>Creating a table</h3>
+						<p>The <code>up()</code> method is where you perform actions to be executed as you run migrations that go up the chain of migrations - that is, all migrations that have not been executed against your copy of the database that are based in increasing timestamped order.</p>
+						<p>Assuming our database has been created in advance, our first task is add code to the <code>up()</code> method, to create a user table using the <code>create_table()</code> method.</p>
+
+						<pre class="prettyprint linenums">$users = $this->create_table('user');</pre>
+
+						<h3>Adding columns</h3>
+						<p>With the <code>TableDefinition</code> object returned by <code>create_table()</code>, we can now add a column called <code>first_name</code> with a default length of 255:</p>
+						<pre class="prettyprint linenums">$users->column("first_name", "string");</pre>
+
+						<p>When this migrations are run, this will generate the following SQL: </p>
+						<pre class="prettyprint linenums">`first_name` varchar(255) NULL</pre>
+
+						<p>We can also create <code>last_name</code>, <code>title</code>, <code>post_count</code> and <code>created_at</code> columns:</p>
+						<pre class="prettyprint linenums">$users->column("last_name", "string", array('limit' => 32));
+$users->column("title", "string",
+		array('limit' => 64, 'default' => 'mr.', 'null' => false));
+$users->column("post_count", "integer",
+		array('limit' => 4, 'default' => 0, 'null' => false));
+$users->column("created_at", "datetime", array('null' => false));</pre>
+
+						<p>These methods will generate the following SQL:</p>
+						<pre class="prettyprint linenums">`last_name` varchar(32) NULL
+`title` varchar(64) DEFAULT 'mr.' NOT NULL
+`post_count` integer(4) DEFAULT 0 NOT NULL
+`created_at` datetime NOT NULL</pre>
+
+						<p>With the table and column details entered, we can now call the <code>finish()</code> method to actually create the table with the definition and its columns</p>
+
+						<pre class="prettyprint linenums">$users->finish();</pre>
+
+						<h3>Adding a down() Method</h3>
+						<p>Having completed the changes for the <code>up()</code> method, we should now add to the <code>down()</code> method.</p>
+						<p>The <code>down()</code> method is where you execute actions that should be performed as you go down the chain. In most cases in the <code>down()</code> method you would want to undo what you did in the <code>up()</code> method. That is if you create a new table in the <code>up()</code> method then you would want to drop it in the <code>down()</code> method. </p>
+
+						<p>To drop the user table we add:</p>
+						<pre class="prettyprint linenums">$this->drop_table('user');</pre>
+
+						<p>Our complete migration file should look as follows:</p>
+
+						<pre class="prettyprint linenums">
+&lt;?php
+  class CreateUsersTable extends Ruckusing_BaseMigration {
+
+    public function up() {
+      $users = $this->create_table('user');
+      $users->column("first_name", "string");
+      $users->column("last_name", "string", array('limit' => 32));
+      $users->column("title", "string",
+		array('limit' => 64, 'default' => 'mr.', 'null' => false));
+      $users->column("post_count", "integer",
+		array('limit' => 4, 'default' => 0, 'null' => false));
+      $users->column("created_at", "datetime", array('null' => false));
+      $users->finish();
+    }
+
+    public function down() {
+      $this->drop_table('user');;
+    }
+  }
+?&gt;</pre>
+
+
+						<h3>Execute your migration</h3>
+
+						<p>With our code complete we can now run our migration script:</p>
+						<pre class="prettyprint linenums">$ ./ruckus.php db:migrate</pre>
+						<p>This command will execute all migrations available, report the output and update your schema info table to the appropriate version.</p>
+						<p>The output in terminal should look something like this:</p>
+						<pre class="prettyprint linenums">$ ./ruckus.php db:migrate
+
+  Started: 2010-09-03 9:26pm PDT
+
+  [db:migrate]:
+          Migrating UP to: 4 (current version: 0)
+  ========= CreateUsersTable ======== (0.11)
+
+  Finished: 2010-09-03 9:26pm PDT</pre>
+					</section>
+					<section id="configuration">
+						<h2>Configuration</h2>
+
+						<p>The following values can be added as configuration key/value pairs in <code>config/database.inc.php</code></p>
+
+						<table class="table table-striped table-bordered">
+							<tr>
+								<th>Key</th>
+								<th>Description</th>
+							</tr>
+							<tr>
+								<td><code>db</code></td>
+								<td>An array of key/value pairs where the key is the environment name, and the value is an array of configuration values as set out below.
+
+									<dl class="dl-horizontal">
+										<dt>type</dt>
+										<dd><strong>String</strong>
+											<br />The database adaptor to use for this entry. Must relate to an adaptor, which by default will be one of <code>pgsql</code> or <code>mysql</code>
+										</dd>
+										<dt>host</dt>
+										<dd><strong>String</strong>
+											<br />The hostname of the database connection.
+										</dd>
+										<dt>port</dt>
+										<dd>
+											<strong>String</strong>
+											<br />The port of the database connection.
+										</dd>
+										<dt>database</dt>
+										<dd><strong>String</strong>
+											<br />The name of the database to be connected to.
+										</dd>
+										<dt>user</dt>
+										<dd>
+											<strong>String</strong>
+											<br />The user to connect to the database as.
+										</dd>
+										<dt>password</dt>
+										<dd><strong>String</strong>
+											<br />The password of the user for the database connection.
+										</dd>
+										<dt>directory</dt>
+										<dd><strong>String</strong>
+											<br />Optional. The name of the directory (in <code>migrations_dir</code>) containing the migrations for this database, if not the same as the database name.
+										</dd>
+									</dl>
+								</td>
+							</tr>
+							<tr>
+								<td><code>migrations_dir</code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td><code>db_dir</code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td><code>log_dir</code></td>
+								<td>The location of the log directory.</td>
+							</tr>
+							<tr>
+								<td><code>ruckusing_base</code></td>
+								<td>The location of the base ruckusing directory</td>
+							</tr>
+						</table>
 					</section>
 					<section id="applying">
 						<h2>Running Tasks</h2>
@@ -941,106 +1107,6 @@ if($result) {
 						<p>For example lets say you wrote a task file with a name of <code>class.Ruckusing_FS_Hello.php</code>, placed it in the <code>lib/tasks</code> directory, then it would be available via: </p>
 
 						<pre class="prettyprint linenums">$ ./ruckus.php fs:hello</pre>
-					</section>
-
-					<section id="started">
-
-						<h2>Getting started</h2>
-
-						<p>Let's see an example to get started, for the purpose of the example, we'll be setting up a table for storing user details. Before we start, open terminal, navigate to the root directory of the framework and modify <code>config/database.inc.php</code>. Enter the appropriate information for your local database.</p>
-
-						<h3>Set up</h3>
-						<p>Migrations requires a single table to keep track of the current version of your database. To create this table, run the following command:</p>
-						<pre class="prettyprint linenums">$ ./ruckus.php db:setup</pre>
-						<p>This task will create a <code>schema_info</code> table in your database with a single column, <code>version</code>. You only need to run setup once.</p>
-
-
-						<h3>Create your first migration</h3>
-						<p>Migrations includes a task to create the skeleton of a migration file, to do this we run:</p>
-						<pre class="prettyprint linenums">$ ./ruckus.php db:generate create_users_table</pre>
-						<p>Every time the generator runs it creates a timestamped file of the current time. The above generator might create a file like <code>db/migrate/20101103105103_CreateUsersTable.php</code></p>
-						<p>The filename (and class name) is a camel-cased string of the same argument you issued to the command.</p>
-						<p>Open up the newly generated file in your favorite text-editor. The class has two methods, <code>up()</code> and <code>down()</code>.</p>
-
-
-						<h3>Creating a table</h3>
-						<p>The <code>up()</code> method is where you perform actions to be executed as you run migrations that go up the chain of migrations - that is, all migrations that have not been executed against your copy of the database that are based in increasing timestamped order.</p>
-						<p>Assuming our database has been created in advance, our first task is add code to the <code>up()</code> method, to create a user table using the <code>create_table()</code> method.</p>
-
-						<pre class="prettyprint linenums">$users = $this->create_table('user');</pre>
-
-						<h3>Adding columns</h3>
-						<p>With the <code>TableDefinition</code> object returned by <code>create_table()</code>, we can now add a column called <code>first_name</code> with a default length of 255:</p>
-						<pre class="prettyprint linenums">$users->column("first_name", "string");</pre>
-
-						<p>When this migrations are run, this will generate the following SQL: </p>
-						<pre class="prettyprint linenums">`first_name` varchar(255) NULL</pre>
-
-						<p>We can also create <code>last_name</code>, <code>title</code>, <code>post_count</code> and <code>created_at</code> columns:</p>
-						<pre class="prettyprint linenums">$users->column("last_name", "string", array('limit' => 32));
-$users->column("title", "string",
-		array('limit' => 64, 'default' => 'mr.', 'null' => false));
-$users->column("post_count", "integer",
-		array('limit' => 4, 'default' => 0, 'null' => false));
-$users->column("created_at", "datetime", array('null' => false));</pre>
-
-						<p>These methods will generate the following SQL:</p>
-						<pre class="prettyprint linenums">`last_name` varchar(32) NULL
-`title` varchar(64) DEFAULT 'mr.' NOT NULL
-`post_count` integer(4) DEFAULT 0 NOT NULL
-`created_at` datetime NOT NULL</pre>
-
-						<p>With the table and column details entered, we can now call the <code>finish()</code> method to actually create the table with the definition and its columns</p>
-
-						<pre class="prettyprint linenums">$users->finish();</pre>
-
-						<h3>Adding a down() Method</h3>
-						<p>Having completed the changes for the <code>up()</code> method, we should now add to the <code>down()</code> method.</p>
-						<p>The <code>down()</code> method is where you execute actions that should be performed as you go down the chain. In most cases in the <code>down()</code> method you would want to undo what you did in the <code>up()</code> method. That is if you create a new table in the <code>up()</code> method then you would want to drop it in the <code>down()</code> method. </p>
-
-						<p>To drop the user table we add:</p>
-						<pre class="prettyprint linenums">$this->drop_table('user');</pre>
-
-						<p>Our complete migration file should look as follows:</p>
-
-						<pre class="prettyprint linenums">
-&lt;?php
-  class CreateUsersTable extends Ruckusing_BaseMigration {
-
-    public function up() {
-      $users = $this->create_table('user');
-      $users->column("first_name", "string");
-      $users->column("last_name", "string", array('limit' => 32));
-      $users->column("title", "string",
-		array('limit' => 64, 'default' => 'mr.', 'null' => false));
-      $users->column("post_count", "integer",
-		array('limit' => 4, 'default' => 0, 'null' => false));
-      $users->column("created_at", "datetime", array('null' => false));
-      $users->finish();
-    }
-
-    public function down() {
-      $this->drop_table('user');;
-    }
-  }
-?&gt;</pre>
-
-
-						<h3>Execute your migration</h3>
-
-						<p>With our code complete we can now run our migration script:</p>
-						<pre class="prettyprint linenums">$ ./ruckus.php db:migrate</pre>
-						<p>This command will execute all migrations available, report the output and update your schema info table to the appropriate version.</p>
-						<p>The output in terminal should look something like this:</p>
-						<pre class="prettyprint linenums">$ ./ruckus.php db:migrate
-
-  Started: 2010-09-03 9:26pm PDT
-
-  [db:migrate]:
-          Migrating UP to: 4 (current version: 0)
-  ========= CreateUsersTable ======== (0.11)
-
-  Finished: 2010-09-03 9:26pm PDT</pre>
 					</section>
 
 					<section id="deployment">
