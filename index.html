@@ -509,7 +509,7 @@ $users->finish();</pre>
 									<td><code>type</code></td>
 									<td>yes</td>
 									<td>string</td>
-									<td>The generalised type of the column. (see generalised types below).</td>
+									<td>The generalised type of the column. (see <a href="#generalisedTypes">generalised types</a> below).</td>
 								</tr>
 								<tr>
 									<td><code>options</code></td>
@@ -624,7 +624,7 @@ $users->finish();</pre>
 									<td><code>type</code></td>
 									<td>yes</td>
 									<td>string</td>
-									<td>The generalised type of the column. (see generalised types below).</td>
+									<td>The generalised type of the column. (see <a href="#generalisedTypes">generalised types</a> below).</td>
 								</tr>
 								<tr>
 									<td><code>options</code></td>
@@ -967,7 +967,7 @@ if($result) {
 						</div>
 
 
-						<h3>Generalised types</h3>
+						<h3 id="generalisedTypes">Generalised types</h3>
 						<p>All columns in a database are really just specific types of a generalized form. That is, a varchar(32) column is really just a string that happens to have a max-length of 32. Same for int(8), its just a number with a maximum value of 99999999.</p>
 						<p>The framework can take advantage of this fact to offer generalized types (with sane defaults) and the support for specifying exact details.</p>
 
