@@ -115,7 +115,7 @@
 
 						<h3>Setup</h3>
 						<p>Migrations uses a database to store the current version of your database schema, this task sets that database up and should be run before any other task.</p>
-						<pre class="prettyprint linenums">$ ./ruckus db:setup</pre>
+						<pre class="prettyprint linenums">$ ./ruckus.php db:setup</pre>
 						<p>Which outputs something like:</p>
 						<pre class="prettyprint linenums">[db setup]:
 Creating table: schema_migrations
@@ -125,32 +125,32 @@ Finished: 2007-09-03 9:34pm PDT</pre>
 
 						<h3>Creating a new skeletion file</h3>
 						<p>Each migration must have a unique name, Ruckusing will warn you if your migration name is already in use.</p>
-						<pre class="prettyprint linenums">$ ./ruckus db:generate name_of_migration</pre>
+						<pre class="prettyprint linenums">$ ./ruckus.php db:generate name_of_migration</pre>
 
 						<h3>Apply migrations</h3>
 						<p>The primary purpose of the framework is to run migrations, and the execution of migrations is all handled by <code>db:migrate</code>.  If no version is specified, all migrations greater than the current database version will be executed.</p>
-						<pre class="prettyprint linenums">$ ./ruckus db:migrate</pre>
+						<pre class="prettyprint linenums">$ ./ruckus.php db:migrate</pre>
 
 						<p>The <code>ENV</code> command line parameter can be used to specify a different database to run against, as specific in the configuration file.</p>
-						<pre class="prettyprint linenums">$ ./ruckus db:migrate ENV=production</pre>
+						<pre class="prettyprint linenums">$ ./ruckus.php db:migrate ENV=production</pre>
 
 						<p>A <code>VERSION</code> parameter can be specified to go up (or down) to a specific version, based on the current version.</p>
-						<pre class="prettyprint linenums">$ ./ruckus db:migrate VERSION=0
-$ ./ruckus db:migrate VERSION=-1</pre>
+						<pre class="prettyprint linenums">$ ./ruckus.php db:migrate VERSION=0
+$ ./ruckus.php db:migrate VERSION=-1</pre>
 
 						<p>Alternatively, specify the timestamp in the filename of the migration to rollback to.</p>
-						<pre class="prettyprint linenums">$ ./ruckus db:migrate VERSION=20121114001742</pre>
+						<pre class="prettyprint linenums">$ ./ruckus.php db:migrate VERSION=20121114001742</pre>
 
 
 						<h3>Current database version</h3>
 						<p>It is always possible to ask the framework (really the DB) what version it is currently at.</p>
-						<pre class="prettyprint linenums">$ ./ruckus db:status</pre>
+						<pre class="prettyprint linenums">$ ./ruckus.php db:status</pre>
 
 
 						<h3>Dumping the current schema</h3>
 						<p>It can be beneficial to get a dump of the DB in raw SQL format which represents the current version.</p>
 						<p><strong>Note:</strong> This dump only contains the actual schema (e.g. the DML needed to reconstruct the DB), but not any actual data. In MySQL terms, this task would not be the same as running the <code>mysqldump</code> command (which by defaults does include any data in the tables).</p>
-						<pre class="prettyprint linenums">$ ./ruckus db:schema</pre>
+						<pre class="prettyprint linenums">$ ./ruckus.php db:schema</pre>
 
 						<p>This task generates a file called <code>db/schema.txt</code> which contains the raw SQL needed to re-generate the schema. </p>
 					</section>
@@ -940,7 +940,7 @@ if($result) {
 						<p>If you named your task according to the above conventions and wrote your task to implement the <code>iTask</code> interface and placed the task file in <code>lib/tasks</code> then your task will automatically be made available and thereby executable via the <code>ruckus</code> wrapper.</p>
 						<p>For example lets say you wrote a task file with a name of <code>class.Ruckusing_FS_Hello.php</code>, placed it in the <code>lib/tasks</code> directory, then it would be available via: </p>
 
-						<pre class="prettyprint linenums">$ ./ruckus fs:hello</pre>
+						<pre class="prettyprint linenums">$ ./ruckus.php fs:hello</pre>
 					</section>
 
 					<section id="started">
@@ -951,13 +951,13 @@ if($result) {
 
 						<h3>Set up</h3>
 						<p>Migrations requires a single table to keep track of the current version of your database. To create this table, run the following command:</p>
-						<pre class="prettyprint linenums">$ ./ruckus db:setup</pre>
+						<pre class="prettyprint linenums">$ ./ruckus.php db:setup</pre>
 						<p>This task will create a <code>schema_info</code> table in your database with a single column, <code>version</code>. You only need to run setup once.</p>
 
 
 						<h3>Create your first migration</h3>
 						<p>Migrations includes a task to create the skeleton of a migration file, to do this we run:</p>
-						<pre class="prettyprint linenums">$ ./ruckus db:generate create_users_table</pre>
+						<pre class="prettyprint linenums">$ ./ruckus.php db:generate create_users_table</pre>
 						<p>Every time the generator runs it creates a timestamped file of the current time. The above generator might create a file like <code>db/migrate/20101103105103_CreateUsersTable.php</code></p>
 						<p>The filename (and class name) is a camel-cased string of the same argument you issued to the command.</p>
 						<p>Open up the newly generated file in your favorite text-editor. The class has two methods, <code>up()</code> and <code>down()</code>.</p>
@@ -1029,10 +1029,10 @@ $users->column("created_at", "datetime", array('null' => false));</pre>
 						<h3>Execute your migration</h3>
 
 						<p>With our code complete we can now run our migration script:</p>
-						<pre class="prettyprint linenums">$ ./ruckus db:migrate</pre>
+						<pre class="prettyprint linenums">$ ./ruckus.php db:migrate</pre>
 						<p>This command will execute all migrations available, report the output and update your schema info table to the appropriate version.</p>
 						<p>The output in terminal should look something like this:</p>
-						<pre class="prettyprint linenums">$ ./ruckus db:migrate
+						<pre class="prettyprint linenums">$ ./ruckus.php db:migrate
 
   Started: 2010-09-03 9:26pm PDT
 
@@ -1049,10 +1049,10 @@ $users->column("created_at", "datetime", array('null' => false));</pre>
 						<p>Because migrations represent incremental changes, they are a great for deployment of your application. With just a single command line parameter, the migrations can be altered from running against the default <code>development</code> database to <code>production</code> instead.</p>
 						<h3>Details</h3>
 						<p>By default a call to <code>migrate</code> will run against the <code>development</code> database specified in <codE>config/database.inc.php</code>.</p>
-						<pre class="prettyprint linenums">$ ./ruckus db:migrate</pre>
+						<pre class="prettyprint linenums">$ ./ruckus.php db:migrate</pre>
 						<p>The <code>ENV</code> command line parameter can be used to specify a different database to run against, as specific in the configuration file.</p>
 						<p>For example, to run against the <code>production</code> database (as specified in <code>config/database.inc.php</code>):</p>
-						<pre class="prettyprint linenums">$ ./ruckus db:migrate ENV=production</pre>
+						<pre class="prettyprint linenums">$ ./ruckus.php db:migrate ENV=production</pre>
 						<h3>Migrating via Capistrano</h3>
 						<p>To hook into the Capistrano "deploy:migrations" point, put this in your recipe:</p>
 						<pre class="prettyprint linenums">desc "Run Ruckusing Migrations"
