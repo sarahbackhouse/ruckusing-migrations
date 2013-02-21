@@ -44,7 +44,29 @@
 							<li><a href="#started">Getting started</a></li>
 							<li><a href="#configuration">Configuration</a></li>
 							<li><a href="#applying">Running Tasks</a></li>
-							<li><a href="#documentation">Migration Methods</a></li>
+							<li class="dropdown">
+								<a href="#" class="dropdown-toggle" data-toggle="dropdown">
+									Migration Methods <b class="caret"></b>
+								</a>
+								<ul class="dropdown-menu">
+									<li><a href="#create_database">create_database</a></li>
+									<li><a href="#drop_database">drop_database</a></li>
+									<li><a href="#create_table">create_table</a></li>
+									<li><a href="#drop_table">drop_table</a></li>
+									<li><a href="#rename_table">rename_table</a></li>
+									<li><a href="#add_column">add_column</a></li>
+									<li><a href="#change_column">change_column</a></li>
+									<li><a href="#column">column</a></li>
+									<li><a href="#remove_column">remove_column</a></li>
+									<li><a href="#rename_column">rename_column</a></li>
+									<li><a href="#add_index">add_index</a></li>
+									<li><a href="#remove_index">remove_index</a></li>
+									<li><a href="#execute">execute</a></li>
+									<li><a href="#select_one">select_one</a></li>
+									<li><a href="#select_all">select_all</a></li>
+									<li><a href="#generalisedTypes">Generalised types</a></li>
+								</ul>
+							</li>
 							<li><a href="#extending">Custom Tasks</a></li>
 							<li><a href="#deployment">Application Deployment & Capistrano</a></li>
 							<li class="divider"></li>
@@ -329,7 +351,7 @@ $ ./ruckus.php db:migrate VERSION=-1</pre>
 
 
 						<div class="docs">
-							<h4>create_database(database_name)</h4>
+							<h4 id="create_database">create_database(database_name)</h4>
 							<p>This command is slightly useless since normally you would be running your migrations against an existing database (created and setup with whatever your traditional RDMBS creation methods are).</p>
 
 							<table class="table table-bordered table-striped">
@@ -352,7 +374,7 @@ $ ./ruckus.php db:migrate VERSION=-1</pre>
 						</div>
 
 						<div class="docs">
-							<h4>drop_database(database_name)</h4>
+							<h4 id="drop_database">drop_database(database_name)</h4>
 							<p>To completely remove a database and all of its tables (and data!).</p>
 
 							<table class="table table-bordered table-striped">
@@ -378,7 +400,7 @@ $ ./ruckus.php db:migrate VERSION=-1</pre>
 
 
 						<div class="docs">
-							<h4>create_table(table_name, options)</h4>
+							<h4 id="create_table">create_table(table_name, options)</h4>
 							<p>This method is probably the most complex of all methods, but also one of the most widely used. <code>$this->create_table()</code> returns a <code>TableDefinition</code> object, to which columns can be assigned using the <code>column()</code> method.</p>
 							<p>The steps for creating a new table are:</p>
 
@@ -431,7 +453,7 @@ $users->column("last_name", "string");
 $users->finish();</pre>
 						</div>
 						<div class="docs">
-							<h4>drop_table(table_name)</h4>
+							<h4 id="drop_table">drop_table(table_name)</h4>
 							<p>Tables can be removed by using the drop_table method call. As might be expected, removing a table also removes all of its columns and any indexes.</p>
 							<table class="table table-bordered table-striped">
 								<tr>
@@ -453,7 +475,7 @@ $users->finish();</pre>
 
 						</div>
 						<div class="docs">
-							<h4>rename_table(old_name, new_name)</h4>
+							<h4 id="rename_table">rename_table(old_name, new_name)</h4>
 							<p>Tables can be renamed using the rename_table method.</p>
 
 							<table class="table table-bordered table-striped">
@@ -485,7 +507,7 @@ $users->finish();</pre>
 						<h3>Column</h3>
 
 						<div class="docs">
-							<h4>add_column(table_name, column_name, type, options)</h4>
+							<h4 id="add_column">add_column(table_name, column_name, type, options)</h4>
 							<table class="table table-bordered table-striped">
 								<tr>
 									<th>Parameter</th>
@@ -597,7 +619,7 @@ $users->finish();</pre>
 						</div>
 
 						<div class="docs">
-							<h4>change_column(table_name, column_name, type, options)</h4>
+							<h4 id="change_column">change_column(table_name, column_name, type, options)</h4>
 							<p>The type and options of existing columns can be modified. If you want to just rename a column then use the <code>rename_column()</code> method below.</p>
 							<p>This method takes a generalized type for the column's type and also an array of options which affects the column definition.</p>
 
@@ -706,14 +728,14 @@ $users->finish();</pre>
 						</div>
 
 						<div class="docs">
-							<h4>column(column_name, type, options)</h4>
+							<h4 id="column">column(column_name, type, options)</h4>
 							<p>As <code>add_column</code> above, but does not require a table name parameter, and executed on the <code>TableDefinition</code> object returned by <code>create_table</code>.</p>
 							<h5>Example</h5>
 							<pre class="prettyprint linenums">$t->column('guid', 'string', array('primary_key' => true, 'limit' => 64));</pre>
 						</div>
-						<div class="docs">
 
-							<h4>remove_column(table_name, column_name)</h4>
+						<div class="docs">
+							<h4 id="remove_column">remove_column(table_name, column_name)</h4>
 							<p>Removing a database column is very simple, but keep in mind that any index associated with that column will also be removed.</p>
 							<table class="table table-bordered table-striped">
 								<tr>
@@ -741,7 +763,7 @@ $users->finish();</pre>
 						</div>
 
 						<div class="docs">
-							<h4>rename_column(table_name, old_column_name, new_column_name)</h4>
+							<h4 id="rename_column">rename_column(table_name, old_column_name, new_column_name)</h4>
 							<p>Database columns can be renamed (assuming the underlying RDMBS/adapter supports it).</p>
 
 							<table class="table table-bordered table-striped">
@@ -778,7 +800,7 @@ $users->finish();</pre>
 						<p>Indexes can be created and removed using the framework methods.</p>
 
 						<div class="docs">
-							<h4>add_index(table_name, column_name, options)</h4>
+							<h4 id="add_index">add_index(table_name, column_name, options)</h4>
 							<table class="table table-bordered table-striped">
 								<tr>
 									<th>Parameter</th>
@@ -832,7 +854,7 @@ $this->add_index("users", array('email', 'ssn') );</pre>
 						</div>
 
 						<div class="docs">
-							<h4>remove_index(table_name, column_name, options)</h4>
+							<h4 id="remove_index">remove_index(table_name, column_name, options)</h4>
 
 							<p>If the index was created using the sibling to this method, <code>add_index</code> then one would need to just specify the same arguments to that method (but calling <code>remove_index</code>).</p>
 							<p><strong>Note:</strong> if a name has been specified for the index, the index must be removed using the name value.</p>
@@ -884,7 +906,7 @@ $this->remove_index("users", "email", array('name' => "index_on_email_column") )
 						<p><strong>Note:</strong> Since these methods take raw SQL queries as input, they might not necessarily be portable across all RDBMS.</p>
 
 						<div class="docs">
-							<h4>execute(query)</h4>
+							<h4 id="execute">execute(query)</h4>
 							<p>The <code>execute()</code> method is intended for queries which do not return any data, e.g. INSERT, UPDATE or DELETE.</p>
 							<p>If an insert query is run, the <code>insert_id</code> will be returned by <code>execute()</code>.</p>
 
@@ -909,7 +931,7 @@ $id = $this->execute("INSERT INTO test VALUES ('value1', 'value2')");</pre>
 						</div>
 
 						<div class="docs">
-							<h4>select_one(query)</h4>
+							<h4 id="select_one">select_one(query)</h4>
 							<p><code>select_one()</code> is intended for queries where you are expecting a single result set.</p>
 							<p>Returns an associative array of the column names and their values.</p>
 							<table class="table table-bordered table-striped">
@@ -938,7 +960,7 @@ if($result) {
 
 
 						<div class="docs">
-							<h4>select_all(query)</h4>
+							<h4 id="select_all">select_all(query)</h4>
 							<p><code>select_all()</code> is intended for all other cases (where you might not necessarily know how many rows you will be getting).</p>
 							<p>Returns an associative array with each element of the array being itself another associative array of the column names and their values.</p>
 							<table class="table table-bordered table-striped">
