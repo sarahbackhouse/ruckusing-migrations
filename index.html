@@ -886,6 +886,7 @@ $this->remove_index("users", "email", array('name' => "index_on_email_column") )
 						<div class="docs">
 							<h4>execute(query)</h4>
 							<p>The <code>execute()</code> method is intended for queries which do not return any data, e.g. INSERT, UPDATE or DELETE.</p>
+							<p>If an insert query is run, the <code>insert_id</code> will be returned by <code>execute()</code>.</p>
 
 							<table class="table table-bordered table-striped">
 								<tr>
@@ -904,6 +905,7 @@ $this->remove_index("users", "email", array('name' => "index_on_email_column") )
 
 							<h5>Example</h5>
 							<pre class="prettyprint linenums">$this->execute("UPDATE foo SET name = 'bar' WHERE .... ");</pre>
+							<pre class="prettyprint linenums">$id = $this->execute("INSERT INTO test (column1, column2) VALUES ('value1', 'value2')");
 						</div>
 
 						<div class="docs">
