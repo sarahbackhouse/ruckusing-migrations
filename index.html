@@ -1108,29 +1108,74 @@ if($result) {
 						<p>All tasks follow a basic naming and structure convention. It is this structure and their placement in the <code>lib/tasks</code> directory which allows the framework to automatically find the tasks and register them for use.</p>
 
 						<h3>Naming Conventions</h3>
-						<p>In a nutshell, task names are pseudo-namespaced. The tasks that come with the framework are namespaced to "db" (e.g. the tasks are "db:migrate", "db:setup", etc).</p>
-						<p>Based on this structure, the task file names are the namespace portion upper-cased, followed by the remainder, with its first letter capitalized. And then the file name is prefixed with <code>class</code>.</p>
-						<p>For example:</p>
-						<ul>
-							<li><code>db:migrate</code> is named <code>class.Ruckusing_DB_Migrate.php</code></li>
-							<li><code>db:setup</code> is named <code>class.Ruckusing_DB_Setup.php</code></li>
-						</ul>
+						<p>The class should prefixed with <code>Task_</code> and the name of the directory. If we want to run a task with the following command:</p>
+						<pre class="prettyprint linenums">$ ./ruckus.php hello:world</pre>
+						<p>We should then create a directory <code>Hello</code> in the <code>Tasks</code> directory, and into that directory place a file <code>World.php</code>. The class in this file should be called <code>Task_Hello_World</code>.</p>
 
-						<h3>Interface implementation</h3>
-						<p>All tasks must implement the <code>lib/classes/task/class.Ruckusing_iTask.php</code> interface (named appropriately enough <code>iTask</code>), which currently just has one method: <code>execute()</code>.</p>
-						<p>Your <code>execute()</code> method can do whatever you want.</p>
-
-						<h3>Objects made available to your task</h3>
-						<p>The framework will automatically make available an object representing the RDBMS adapter object via the <code>adapter</code> private property.</p>
-						<p>For example: </p>
-
+						<h3>Intrerface implementation</h3>
+						<p>All tasks must implement the <code>lib/Ruckusing/Task/Interface.php</code> interface (named <code>Ruckusing_Task_Interface</code>), which has two methods: <code>execute()</code> and <code>help()</code>. The <code>execute()</code> method is called when the task is run.</p>
+						<p>The framework will automatically make available an object representing the RDBMS adapter object via the <code>adapter</code> private property. For example: </p>
 						<pre class="prettyprint linenums">$result = $this->adapter-> ... </pre>
+						<p>The configured adapter for this environment will be passed to the <code>__construct()</code>, so your class should include:</p>
+						<pre class="prettyprint linenums">public function __construct($adapter)
+{
+    parent::__construct($adapter);
+}</pre>
 
 						<h3>Running your tasks</h3>
-						<p>If you named your task according to the above conventions and wrote your task to implement the <code>iTask</code> interface and placed the task file in <code>lib/tasks</code> then your task will automatically be made available and thereby executable via the <code>ruckus</code> wrapper.</p>
-						<p>For example lets say you wrote a task file with a name of <code>class.Ruckusing_FS_Hello.php</code>, placed it in the <code>lib/tasks</code> directory, then it would be available via: </p>
+						<p>If you named your task according to the above conventions and wrote your task to implement the <code>Ruckusing_Task_Interface</code> interface and placed the task file in <code>Tasks</code> directory, then your task will automatically be made available and thereby executable via the <code>ruckus</code> wrapper.</p>
+						<p>For example lets say you wrote a task file with a name of <code>World.php</code>, placed it in the <code>lib/Task/Hello</code> directory, then it would be available via: </p>
+						<pre class="prettyprint linenums">$ ./ruckus.php hello:world</pre>
 
-						<pre class="prettyprint linenums">$ ./ruckus.php fs:hello</pre>
+						<h3>Example</h3>
+
+						<pre class="prettyprint linenums">class Task_Hello_World
+	extends Ruckusing_Task_Base
+	implements Ruckusing_Task_Interface
+{
+    /**
+     * Creates an instance of Task_Hello_World
+     *
+     * @param Ruckusing_Adapter_Base $adapter The current adapter being used
+     *
+     * @return Task_Hello_World
+     */
+    public function __construct($adapter)
+    {
+        parent::__construct($adapter);
+    }
+
+    /**
+     * Primary task entry point
+     *
+     * @param array $args The current supplied options.
+     */
+    public function execute($args)
+    {
+        echo "\nHello, World\n";
+    }
+
+    /**
+     * Return the usage of the task
+     *
+     * @return string
+     */
+    public function help()
+    {
+        $output =&lt;&lt;&lt;USAGE
+
+\tTask: hello:world
+
+\tHello World.
+
+\tThis task does not take arguments.
+
+USAGE;
+
+        return $output;
+    }
+}
+</pre>
 					</section>
 
 					<section id="deployment">
